@@ -69,8 +69,8 @@ export function QRow({
       next.reason = undefined;
       next.reasonOther = undefined;
     }
-    // Prefill time with 0 when skipped
-    if (key === 'res' && value === 'S' && next.t === undefined) {
+    // Prefill time with 0 when result is set (so time pill activates for all result types)
+    if (key === 'res' && (value === 'C' || value === 'W' || value === 'S') && next.t === undefined) {
       next.t = 0;
     }
     onChange(next);
@@ -84,7 +84,8 @@ export function QRow({
       : [];
 
   const resError = (showValidation || touched.res) && !q.res;
-  const timeError = (showValidation || touched.t) && q.t === undefined;
+  // Time is required whenever a result has been chosen
+  const timeError = q.res && (showValidation || touched.t) && q.t === undefined;
   const reasonError = (showValidation || touched.reason) && (q.res === 'W' || q.res === 'S') && !q.reason;
 
   return (

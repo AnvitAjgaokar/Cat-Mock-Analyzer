@@ -4,7 +4,7 @@ import { SetCard } from '../../components/SetCard';
 import { QRow } from '../../components/QRow';
 import { Card, Chip } from '../../ui/Card';
 import { NumInput } from '../../ui/NumInput';
-import { varcScore, varcTime, vaTypeTime, listMarks, fmtSecs, readingTime } from '../../calc';
+import { varcScore, varcTime, vaTypeTime, listMarks, fmtSecs, readingTime, sumQTime } from '../../calc';
 import { WRONG_REASONS_VA, VA_TYPES, SKIP_REASONS_Q } from '../../data/options';
 
 interface VarcProps {
@@ -33,7 +33,8 @@ export function Varc({ mock, onChange, marking, showValidation = false }: VarcPr
     onChange({ ...mock, varc: { ...mock.varc, ...updates } });
   }
 
-  const rcTime = mock.varc.rc.reduce((s, p) => s + p.t, 0);
+  // RC time = Σ(reading time + question times) per passage
+  const rcTime = mock.varc.rc.reduce((s, p) => s + p.t + sumQTime(p.qs), 0);
   const vaTime = mock.varc.va.reduce((s, v) => s + vaTypeTime(v), 0);
   const totalMarks = varcScore(mock, marking);
   const totalTime = varcTime(mock);

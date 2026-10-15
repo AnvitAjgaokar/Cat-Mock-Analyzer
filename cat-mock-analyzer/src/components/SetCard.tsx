@@ -12,7 +12,7 @@ import {
   SKIP_REASONS_SET, WRONG_REASONS_RC, WRONG_REASONS_DILR,
   SKIP_REASONS_Q,
 } from '../data/options';
-import { accuracy, attempts, corrects, readingTime, listMarks, fmtSecs } from '../calc';
+import { accuracy, attempts, corrects, readingTime, listMarks, fmtSecs, sumQTime } from '../calc';
 import { Chip } from '../ui/Card';
 
 const LEVEL_OPTIONS = [
@@ -120,8 +120,11 @@ export function SetCard({ set, onChange, onDelete, index, marking, showValidatio
           <span className="text-xs">Attempted</span>
         </label>
 
-        {/* Total time */}
-        <TimeInput value={set.t} onChange={(s) => update('t', s)} />
+        {/* Total time — for RC this is reading time; total = reading + Q times */}
+        <div className="flex flex-col items-start gap-0.5">
+          {set.kind === 'RC' && <span className="text-[10px] text-zinc-500">Reading</span>}
+          <TimeInput value={set.t} onChange={(s) => update('t', s)} />
+        </div>
 
         {/* Stats pills */}
         {set.attempted && (
@@ -189,13 +192,16 @@ export function SetCard({ set, onChange, onDelete, index, marking, showValidatio
                 />
               ))}
 
-              {/* Reading/setup time (RC only) */}
-              {set.kind === 'RC' && set.t > 0 && (
-                <div className={`text-xs pl-7 mt-1 ${readT < 0 ? 'text-amber-400' : 'text-zinc-500'}`}>
-                  Reading/setup: {fmtSecs(readT)}
-                  {readT < 0 && ' ⚠ negative'}
-                </div>
-              )}
+              {/* Reading time + total (RC only) */}
+              {set.kind === 'RC' && set.t > 0 && (() => {
+                const qT = sumQTime(set.qs);
+                const total = set.t + qT;
+                return (
+                  <div className="text-xs pl-7 mt-1 text-zinc-500">
+                    Reading: {fmtSecs(set.t)}&nbsp;&nbsp;·&nbsp;&nbsp;Total: {fmtSecs(total)}
+                  </div>
+                );
+              })()}
             </div>
           )}
         </>

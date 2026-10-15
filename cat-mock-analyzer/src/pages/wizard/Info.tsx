@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { Mock } from '../../types';
 import { Select } from '../../ui/Select';
 import { SOURCES } from '../../data/options';
@@ -11,6 +11,15 @@ interface InfoProps {
 }
 
 export function Info({ mock, onChange, showValidation = false }: InfoProps) {
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  function markTouched(field: string) {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+  }
+
+  const nameError = (showValidation || touched.name) && !mock.name;
+  const dateError = (showValidation || touched.date) && !mock.date;
+
   return (
     <div className="max-w-xl">
       <h2 className="text-xl font-bold mb-4">1. Basic Info</h2>
@@ -21,10 +30,11 @@ export function Info({ mock, onChange, showValidation = false }: InfoProps) {
             type="text"
             value={mock.name}
             onChange={(e) => onChange({ ...mock, name: e.target.value })}
+            onBlur={() => markTouched('name')}
             placeholder="e.g. SIMCAT 1"
-            className={`w-full bg-zinc-800 border ${showValidation && !mock.name ? 'border-rose-500' : 'border-zinc-700'} rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-accent`}
+            className={`w-full bg-zinc-800 border ${nameError ? 'border-rose-500' : 'border-zinc-700'} rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-accent`}
           />
-          {showValidation && !mock.name && <span className="absolute top-0 right-0 text-xs text-rose-500">Required</span>}
+          {nameError && <span className="absolute top-0 right-0 text-xs text-rose-500">Required</span>}
         </div>
         
         <div className="relative">
@@ -33,9 +43,10 @@ export function Info({ mock, onChange, showValidation = false }: InfoProps) {
             type="date"
             value={mock.date}
             onChange={(e) => onChange({ ...mock, date: e.target.value })}
-            className={`w-full bg-zinc-800 border ${showValidation && !mock.date ? 'border-rose-500' : 'border-zinc-700'} rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-accent`}
+            onBlur={() => markTouched('date')}
+            className={`w-full bg-zinc-800 border ${dateError ? 'border-rose-500' : 'border-zinc-700'} rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-accent`}
           />
-          {showValidation && !mock.date && <span className="absolute top-0 right-0 text-xs text-rose-500">Required</span>}
+          {dateError && <span className="absolute top-0 right-0 text-xs text-rose-500">Required</span>}
         </div>
 
         <div>

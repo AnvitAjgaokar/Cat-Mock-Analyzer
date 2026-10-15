@@ -19,6 +19,7 @@ function emptySet(kind: 'DI' | 'LR'): SetType {
 
 export function Dilr({ mock, onChange, marking, showValidation = false }: DilrProps) {
   const [tab, setTab] = useState<'DI' | 'LR'>('DI');
+  const [pendingDelete, setPendingDelete] = useState<number | null>(null);
 
   const sets = mock.dilr.sets;
   const filteredSets = sets.filter(s => s.kind === tab);
@@ -97,15 +98,36 @@ export function Dilr({ mock, onChange, marking, showValidation = false }: DilrPr
         {sets.map((set, i) => {
           if (set.kind !== tab) return null;
           return (
-            <SetCard
-              key={i}
-              index={i + 1}
-              set={set}
-              onChange={(updated) => updateSet(i.toString(), updated)}
-              onDelete={() => deleteSet(i)}
-              marking={marking}
-              showValidation={showValidation}
-            />
+            <div key={i}>
+              <SetCard
+                index={i + 1}
+                set={set}
+                onChange={(updated) => updateSet(i.toString(), updated)}
+                onDelete={() => setPendingDelete(i)}
+                marking={marking}
+                showValidation={showValidation}
+              />
+              {/* Inline delete confirmation */}
+              {pendingDelete === i && (
+                <div className="-mt-2 mb-3 mx-1 flex items-center gap-3 bg-rose-950/40 border border-rose-700/50 rounded-b-lg px-4 py-2 text-sm">
+                  <span className="text-rose-300 flex-1">Delete this set? This cannot be undone.</span>
+                  <button
+                    type="button"
+                    onClick={() => { deleteSet(i); setPendingDelete(null); }}
+                    className="px-3 py-1 bg-rose-600 hover:bg-rose-500 text-white rounded text-xs font-medium"
+                  >
+                    Yes, Delete
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPendingDelete(null)}
+                    className="px-3 py-1 bg-zinc-700 hover:bg-zinc-600 text-zinc-200 rounded text-xs"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              )}
+            </div>
           );
         })}
         <button

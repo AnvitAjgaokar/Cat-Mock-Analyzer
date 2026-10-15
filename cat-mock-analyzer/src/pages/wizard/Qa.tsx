@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { Mock, QA_Q } from '../../types';
 import { QRow } from '../../components/QRow';
 import { Card } from '../../ui/Card';
@@ -16,6 +16,15 @@ interface QaProps {
 
 export function Qa({ mock, onChange, marking, showValidation = false }: QaProps) {
   const qs = mock.qa.qs;
+  // Track which row's subject/topic have been touched (by row index)
+  const [rowTouched, setRowTouched] = useState<Record<number, Record<string, boolean>>>({});
+
+  function markRowTouched(rowIdx: number, field: string) {
+    setRowTouched((prev) => ({
+      ...prev,
+      [rowIdx]: { ...(prev[rowIdx] ?? {}), [field]: true }
+    }));
+  }
 
   function addRow() {
     onChange({
@@ -71,35 +80,39 @@ export function Qa({ mock, onChange, marking, showValidation = false }: QaProps)
       <Card className="flex flex-col gap-1">
         {qs.map((q, i) => {
           const topics = q.subj && (q.subj in QA_TOPICS) ? QA_TOPICS[q.subj as keyof typeof QA_TOPICS] : [];
+          const rt = rowTouched[i] ?? {};
+
+          const subjError = (showValidation || rt.subj) && !q.subj;
+          const topicError = (showValidation || rt.topic) && !q.topic;
           
           const extra = (
             <div className="flex flex-col gap-0.5 mr-2" onClick={(e) => e.stopPropagation()}>
-              <label className="text-[10px] text-zinc-500 font-medium">Subject & Topic</label>
+              <label className="text-[10px] text-zinc-500 font-medium">Subject &amp; Topic</label>
               <div className="flex items-center gap-2">
                 <div className="relative">
                   <Select
                     value={q.subj}
-                    onChange={(v) => updateQ(i, { ...q, subj: v, topic: '' })}
+                    onChange={(v) => { updateQ(i, { ...q, subj: v, topic: '' }); markRowTouched(i, 'subj'); }}
                     options={[
                       { value: '', label: 'subject…' },
                       ...QA_SUBJECTS.map(s => ({ value: s, label: s }))
                     ]}
-                    className={`w-32 ${showValidation && !q.subj ? 'border-rose-500' : ''}`}
+                    className={`w-32 ${subjError ? 'border-rose-500' : ''}`}
                   />
-                  {showValidation && !q.subj && <span className="absolute -top-3 right-0 text-[9px] text-rose-500">Required</span>}
+                  {subjError && <span className="absolute -top-3 right-0 text-[9px] text-rose-500">Required</span>}
                 </div>
                 <div className="relative">
                   <Select
                     value={q.topic}
-                    onChange={(v) => updateQ(i, { ...q, topic: v })}
+                    onChange={(v) => { updateQ(i, { ...q, topic: v }); markRowTouched(i, 'topic'); }}
                     options={[
                       { value: '', label: 'topic…' },
                       ...topics.map(t => ({ value: t, label: t }))
                     ]}
-                    className={`w-40 ${showValidation && !q.topic ? 'border-rose-500' : ''}`}
+                    className={`w-40 ${topicError ? 'border-rose-500' : ''}`}
                     disabled={!q.subj}
                   />
-                  {showValidation && !q.topic && <span className="absolute -top-3 right-0 text-[9px] text-rose-500">Required</span>}
+                  {topicError && <span className="absolute -top-3 right-0 text-[9px] text-rose-500">Required</span>}
                 </div>
               </div>
             </div>

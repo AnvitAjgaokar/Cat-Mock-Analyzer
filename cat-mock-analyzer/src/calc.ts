@@ -56,10 +56,11 @@ export function vaTypeTime(va: VAType): number {
   return sumQTime(va.qs);
 }
 
-/** Total seconds for VARC: RC + VA totals. tOverride wins. */
+/** Total seconds for VARC: RC + VA totals. tOverride wins.
+ *  For RC: set.t is reading/setup time; total = set.t + Σ question times. */
 export function varcTime(mock: Mock): number {
   if (mock.varc?.tOverride != null) return mock.varc.tOverride;
-  const rcTotal = mock.varc?.rc?.reduce((s, p) => s + p.t, 0) ?? 0;
+  const rcTotal = mock.varc?.rc?.reduce((s, p) => s + p.t + sumQTime(p.qs), 0) ?? 0;
   const vaTotal = mock.varc?.va?.reduce((s, v) => s + vaTypeTime(v), 0) ?? 0;
   return rcTotal + vaTotal;
 }

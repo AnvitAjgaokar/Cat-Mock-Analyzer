@@ -191,9 +191,31 @@ export function TimeInput({ value, onChange, id, className }: TimeInputProps) {
                 </div>
               </div>
 
-              {/* Selected display */}
-              <div className="text-center text-sm font-mono text-accent mb-2">
-                {fmtSecs(value)}
+              {/* Inline MM:SS direct-edit inputs */}
+              <div className="flex items-center justify-center gap-1 mb-2">
+                <input
+                  type="number"
+                  min={0}
+                  max={59}
+                  value={mins}
+                  onChange={(e) => {
+                    const m = Math.max(0, Math.min(59, parseInt(e.target.value) || 0));
+                    onChange(m * 60 + secs);
+                  }}
+                  className="w-11 text-center bg-zinc-800 border border-zinc-600 rounded text-sm font-mono text-accent focus:outline-none focus:ring-1 focus:ring-accent py-0.5"
+                />
+                <span className="text-accent font-bold text-base">:</span>
+                <input
+                  type="number"
+                  min={0}
+                  max={59}
+                  value={secs}
+                  onChange={(e) => {
+                    const s = Math.max(0, Math.min(59, parseInt(e.target.value) || 0));
+                    onChange(mins * 60 + s);
+                  }}
+                  className="w-11 text-center bg-zinc-800 border border-zinc-600 rounded text-sm font-mono text-accent focus:outline-none focus:ring-1 focus:ring-accent py-0.5"
+                />
               </div>
 
               {/* Quick chips */}
