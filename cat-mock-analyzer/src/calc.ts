@@ -68,7 +68,7 @@ export function varcTime(mock: Mock): number {
 /** Total seconds for DILR. tOverride wins. */
 export function dilrTime(mock: Mock): number {
   if (mock.dilr?.tOverride != null) return mock.dilr.tOverride;
-  return mock.dilr?.sets?.reduce((s, set) => s + set.t, 0) ?? 0;
+  return mock.dilr?.sets?.reduce((s, set) => s + set.t + (set.attempted ? sumQTime(set.qs) : 0), 0) ?? 0;
 }
 
 /** Total seconds for QA. tOverride wins. */

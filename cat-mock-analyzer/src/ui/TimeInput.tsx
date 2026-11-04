@@ -135,7 +135,7 @@ export function TimeInput({ value, onChange, id, className }: TimeInputProps) {
 
       {/* Popover */}
       {open && (
-        <div className="absolute z-50 top-full left-0 mt-1 bg-zinc-900 border border-zinc-700 rounded-lg shadow-xl p-3 w-44">
+        <div className="absolute z-50 top-full right-0 mt-1 bg-zinc-900 border border-zinc-700 rounded-lg shadow-xl p-3 w-44">
           {typing ? (
             /* Text entry mode */
             <div className="flex flex-col gap-2">

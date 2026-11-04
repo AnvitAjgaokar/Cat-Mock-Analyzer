@@ -23,11 +23,28 @@ export default function Analytics() {
         api.getMocks(),
         api.getSettings()
       ]);
-      // Only include completed mocks for analytics
-      const completes = mData.filter(m => m.status === 'complete');
+      // The API returns { id, name, date, status, data: { varc, dilr, qa, ... }, created_at, updated_at }.
+      // Flatten data onto the row so the Mock type (m.varc, m.dilr etc.) works throughout.
+      const flattened: (Mock & { status: string })[] = mData.map((m: any) => ({
+        status: m.status,
+        ...m.data,
+        // Prefer the DB-level id/name/date (they're the same but be explicit)
+        id: m.id ?? m.data?.id,
+        name: m.name ?? m.data?.name,
+        date: m.date ?? m.data?.date,
+      }));
+
+      // Include all mocks that have any VARC / DILR / QA data entered
+      const withData = flattened.filter(m => {
+        const hasVarc = (m.varc?.rc?.length ?? 0) > 0 || (m.varc?.va?.length ?? 0) > 0;
+        const hasDilr = (m.dilr?.sets?.length ?? 0) > 0;
+        const hasQa   = (m.qa?.qs?.length ?? 0) > 0;
+        return hasVarc || hasDilr || hasQa;
+      });
+
       // Sort oldest to newest globally
-      completes.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-      setAllMocks(completes);
+      withData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      setAllMocks(withData as Mock[]);
       setSettings(sData as AppSettings);
     }
     load();
@@ -68,7 +85,7 @@ export default function Analytics() {
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between border-b border-zinc-800 pb-4 gap-4">
         <div>
           <h1 className="text-2xl font-bold">Analytics Engine</h1>
-          <p className="text-sm text-zinc-400">Insights across {filteredMocks.length} completed mock(s).</p>
+          <p className="text-sm text-zinc-400">Insights across {filteredMocks.length} mock(s) ({(allMocks as any[]).filter(m => m.status === 'complete').length} complete, {(allMocks as any[]).filter(m => m.status !== 'complete').length} in progress).</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3 bg-zinc-900/50 p-2 rounded-lg border border-zinc-800/50">
